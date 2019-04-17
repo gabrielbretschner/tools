@@ -12,7 +12,7 @@ def update_dict(the_dict, keys, value):
         return value
     if isinstance(the_dict, list):
         keys[0] = int(keys[0])
-        
+
     the_dict[keys[0]] = update_dict(the_dict[keys[0]], keys[1:], value)
     return the_dict
 
@@ -25,7 +25,6 @@ def update_dict(the_dict, keys, value):
 @click.option('--names', default=" ", help="Name for each value for file name", type=ListClickType())
 def generate_config(template, output, key, values, names):
     """Generate new config from template by replacing given key with values."""
-    print(locals())
     if isinstance(key, tuple):
         assert isinstance(values, tuple) and len(key) == len(values)
         key = list(key)
