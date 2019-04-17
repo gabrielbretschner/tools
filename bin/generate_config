@@ -1,0 +1,2 @@
+#!/bin/sh
+~/.virtualenvs/tools/bin/python ${BASH_SOURCE%/*}/../generate_config.py $@
