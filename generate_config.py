@@ -44,7 +44,6 @@ def generate_config(template, output, key, values, names):
     for k, v in zip(key, values):
         keys = k.split('.')
         for i, value in enumerate(v):
-            print(config_template)
             new_config = update_dict(config_template.copy(), keys, value)
             configs[i] = new_config
 
