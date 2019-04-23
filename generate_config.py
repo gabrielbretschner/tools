@@ -49,7 +49,7 @@ def generate_config(template, output, key, values, names):
             configs[i] = new_config
 
     for name, config in zip(names, configs):
-        with open("%s.%s.yaml" % (output, name), "w") as f:
+        with open("%s%s.yaml" % (output, name), "w") as f:
             f.write(dump(config, explicit_start=True))
 
 
