@@ -105,5 +105,5 @@ echo
 echo
 echo -e "$title\n$(echo -e "$result_string" | column -t -s' ')" | tee -a "${result_path}/results.log"
 
-python --version > "${result_path}/python_env"
+python --version > "${result_path}/python_env" 2>&1
 pip freeze >> "${result_path}/python_env"
