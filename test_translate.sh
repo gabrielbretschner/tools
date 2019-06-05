@@ -21,20 +21,19 @@ function result_dir(){
 
 function run_translate(){
 	# run_translate(path, mode, hash, args)
-	path=$1
+	name=$1
 	mode=$2
-	git_hash=$3
-	args=$4
-	log_file="${path}/${mode}.beam.${beam}.batch.${batch_size}.${git_hash}.log"
-	hyp_file="${path}/${mode}.beam.${beam}.batch.${batch_size}.${git_hash}.hyp"
+	args=$3
+	log_file="${name}.log"
+	hyp_file="${name}.hyp"
 	mode_arg=""
 	if [[ "$mode" == "greedy" ]]; then
 		mode_arg="translate.mode=greedy"
-  else
-    mode_arg="translate.mode=beam"
+ 	else
+    	mode_arg="translate.mode=beam"
 	fi
 	if [[ ! -e "$hyp_file" ]]; then
-		python "$ppath/src/python/neural.py" "--config=$NEURAL_CONFIG" "--mode=translate" $mode_arg "translate.output.0=$hyp_file" $args > "$log_file" 2>&1
+		python "$ppath/src/python/neural.py" "--config=$NEURAL_CONFIG" "--mode=translate" $mode_arg "translate.output.0=${hyp_file}" $args > "$log_file" 2>&1
 		spm_decode --model "$TARGET_BPE" "$hyp_file" | sacrebleu "$REFERENCE" >> "$log_file"
 	fi
 	echo "$log_file"
@@ -49,7 +48,7 @@ function run_experiment(){
 		exit 1
 	fi
 	echo "translate $mode.$beam_size.$batch_size"
-	log_file=$(run_translate "$result_path" "$mode" "$git_hash" "translate.batch-size=${batch_size} translate.beam-size=${beam_size}")
+	log_file=$(run_translate "${result_path}/${mode}.beam.${beam_size}.batch.${batch_size}.${git_hash}" "$mode" "translate.batch-size=${batch_size} translate.beam-size=${beam_size}")
 	echo "done"
 	ws=$(grep "words/sec" "$log_file" | cut -d' ' -f11,12)
 	bleu=$(grep BLEU "$log_file" | cut -d= -f2 |cut -d' ' -f2)
