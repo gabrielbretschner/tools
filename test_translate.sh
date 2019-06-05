@@ -104,3 +104,5 @@ run_experiment "beam" "2" "100"
 echo
 echo
 echo -e "$title\n$(echo -e "$result_string" | column -t -s' ')" | tee -a "${result_path}/results.log"
+
+pip freeze > "${result_path}/python_env"
