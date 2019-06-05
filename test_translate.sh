@@ -42,13 +42,13 @@ function run_translate(){
 
 function run_experiment(){
 	mode=$1
-	batch_size=$2
-	beam_size=$3
+	beam_size=$2
+	batch_size=$3
 	if [[ ! ("$mode" != "greedy" || ("$batch_size" == 1 && "$beam_size" == 1)) ]]; then
 		echo "greedy mode requires batch 1 and beam 1"
 		exit 1
 	fi
-	echo "translate $mode.$batch_size.$beam_size"
+	echo "translate $mode.$beam_size.$batch_size"
 	log_file=$(run_translate "$result_path" "$mode" "$git_hash" "translate.batch-size=${batch_size} translate.beam-size=${beam_size}")
 	echo "done"
 	ws=$(grep "words/sec" "$log_file" | cut -d' ' -f11,12)
