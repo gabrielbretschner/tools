@@ -9,10 +9,14 @@ NEURAL_CONFIG=$1
 REFERENCE=$2
 git_hash=$3
 
+function config_hash(){
+	echo $(sha256sum "$NEURAL_CONFIG" | cut -d' ' -f1)
+}
 function result_dir(){
-	config_hash=$(sha256sum "$NEURAL_CONFIG" | cut -d' ' -f1 | awk '{print substr($0,0,10)}')
+	
+	short_config_hash=$(sha256sum "$NEURAL_CONFIG" | cut -d' ' -f1 | awk '{print substr($0,0,10)}')
 	short_git_hash=$(echo "$git_hash" | awk '{print substr($0,0,10)}' )
-	echo "run.git.${short_git_hash}.config.${config_hash}"
+	echo "run.git.${short_git_hash}.config.${short_config_hash}"
 }
 
 function run_translate(){
@@ -86,14 +90,16 @@ echo "done"
 export PYTHONPATH="$ppath:$PYTHONPATH"
 
 result_path=$(result_dir)
+echo $config_hash
 mkdir -p "$result_path"
 echo "output to $result_path"
 cp "$NEURAL_CONFIG" "$result_path/"
 
-result_string="$git_hash"
+title="command used: $0 $*\ngit-hash: $git_hash \nconfig hash: $(config_hash)"
+result_string=""
 
 run_experiment "greedy" "1" "1"
 run_experiment "beam" "1" "1"
 echo
 echo
-echo -e "$result_string" | column -t -s' ' | tee -a "${result_path}/results.log"
+echo -e "$title\n$(echo -e "$result_string" | column -t -s' ')" | tee -a "${result_path}/results.log"
