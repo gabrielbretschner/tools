@@ -69,13 +69,17 @@ function run_experiment(){
 function activate_virtualenv(){
 	if [[ "$OSTYPE" == "darwin"* ]]; then
 	  source "/usr/local/miniconda3/etc/profile.d/conda.sh" || exit
-	  conda activate neural || exit
+	  conda activate neural3.5 || exit
 	else
 	  source "$HOME/.virtualenvs/neural/bin/activate"
     fi
 }
 
 function checkout_neural(){
+	if [[ ! -e "$CHECKOUT_DIR" ]]; then
+		echo "directory $CHECKOUT_DIR does not exist"
+		exit 1
+	fi
 	if [[ "$git_hash" == "" ]]; then
 		cd "$NEURAL_HOME" || exit
 		git_hash=$(git rev-parse HEAD)
