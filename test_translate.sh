@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
 #
-# ./test_translate.sh neural_config refrence_file [git_hash]
+# ./test_translate.sh neural_config refrence_file target_bpe [git_hash]
 #
 NEURAL_HOME="$HOME/src/neural"
 CHECKOUT_DIR='/tmp/git/'
 EXP_DIR=$(pwd)
 NEURAL_CONFIG=$1
 REFERENCE=$2
-git_hash=$3
+TARGET_BPE=$3
+git_hash=$4
 
 function config_hash(){
 	echo $(sha256sum "$NEURAL_CONFIG" | cut -d' ' -f1)
 }
 function result_dir(){
-	
+
 	short_config_hash=$(sha256sum "$NEURAL_CONFIG" | cut -d' ' -f1 | awk '{print substr($0,0,10)}')
 	short_git_hash=$(echo "$git_hash" | awk '{print substr($0,0,10)}' )
 	echo "run.git.${short_git_hash}.config.${short_config_hash}"
@@ -35,7 +36,7 @@ function run_translate(){
 	fi
 	if [[ ! -e "$hyp_file" ]]; then
 		python "$ppath/src/python/neural.py" "--config=$NEURAL_CONFIG" "--mode=translate" $mode_arg "translate.output.0=$hyp_file" $args > "$log_file" 2>&1
-		spm_decode --model bpe.en.model "$hyp_file" | sacrebleu "$REFERENCE" >> "$log_file"
+		spm_decode --model "$TARGET_BPE" "$hyp_file" | sacrebleu "$REFERENCE" >> "$log_file"
 	fi
 	echo "$log_file"
 }
