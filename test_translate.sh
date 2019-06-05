@@ -25,8 +25,8 @@ function run_translate(){
 	mode=$2
 	git_hash=$3
 	args=$4
-	log_file="${path}/${mode}.${git_hash}.log"
-	hyp_file="${path}/${mode}.${git_hash}.hyp"
+	log_file="${path}/${mode}.beam.${beam}.batch.${batch_size}.${git_hash}.log"
+	hyp_file="${path}/${mode}.beam.${beam}.batch.${batch_size}.${git_hash}.hyp"
 	mode_arg=""
 	if [[ "$mode" == "greedy" ]]; then
 		mode_arg="translate.mode=greedy"
