@@ -13,10 +13,19 @@ git_hash=$4
 function config_hash(){
 	echo $(sha256sum "$NEURAL_CONFIG" | cut -d' ' -f1)
 }
+function python_env_hash(){
+	python --version > "/tmp/python_env" 2>&1
+	pip freeze >> "/tmp/python_env"
+	python_hash=$(sha256sum /tmp/python_env | cut -d' ' -f1)
+	rm "/tmp/python_env"
+	export python_hash
+}
 function result_dir(){
 	short_config_hash=$(sha256sum "$NEURAL_CONFIG" | cut -d' ' -f1 | awk '{print substr($0,0,10)}')
 	short_git_hash=$(echo "$git_hash" | awk '{print substr($0,0,10)}' )
-	echo "run.git.${short_git_hash}.config.${short_config_hash}"
+	python_env_hash
+	short_python_hash=$(echo "$python_hash" | awk '{print substr($0,0,10)}')
+	echo "run.git.${short_git_hash}.config.${short_config_hash}.python.${short_python_hash}"
 }
 
 function run_translate(){
@@ -92,8 +101,9 @@ result_path=$(result_dir)
 mkdir -p "$result_path"
 echo "output to $result_path"
 cp "$NEURAL_CONFIG" "$result_path/"
+python_env_hash
 
-title="command used: $0 $*\ngit-hash: $git_hash \nconfig hash: $(config_hash)"
+title="command used: $0 $*\ngit-hash: $git_hash \nconfig hash: $(config_hash)\npython hash: ${python_hash}"
 result_string=""
 
 run_experiment "greedy" "1" "1"
@@ -101,6 +111,7 @@ run_experiment "beam" "1" "1"
 run_experiment "beam" "1" "100"
 run_experiment "beam" "2" "1"
 run_experiment "beam" "2" "100"
+
 echo
 echo
 echo -e "$title\n$(echo -e "$result_string" | column -t -s' ')" | tee -a "${result_path}/results.log"
