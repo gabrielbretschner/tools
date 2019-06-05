@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 #
-# ./test_translate.sh [git_hash]
+# ./test_translate.sh neural_config refrence_file [git_hash]
 #
 NEURAL_HOME="$HOME/src/neural"
 CHECKOUT_DIR='/tmp/git/'
-EXP_DIR=/Users/gabriel/exp/deen/transformer.240418
-NEURAL_CONFIG="translate.wmt.yaml"
-REFERENCE="en.newstest2018.short"
-git_hash=$1
+EXP_DIR=$(pwd)
+NEURAL_CONFIG=$1
+REFERENCE=$2
+git_hash=$3
 
 function result_dir(){
 	config_hash=$(sha256sum "$NEURAL_CONFIG" | cut -d' ' -f1 | awk '{print substr($0,0,10)}')
@@ -94,6 +94,6 @@ result_string="$git_hash"
 
 run_experiment "greedy" "1" "1"
 run_experiment "beam" "1" "1"
-echo 
-echo 
+echo
+echo
 echo -e "$result_string" | column -t -s' ' | tee -a "${result_path}/results.log"

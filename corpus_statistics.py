@@ -169,14 +169,14 @@ def output_corpus_table(stats, subwords = False):
         out.append([
             name,
             "Sentences",
-            "%d" % src_stat.n_lines if src_stat is not None else "",
-            "%d" % trg_stat.n_lines if trg_stat is not None else "",
+            "{:,}".format(src_stat.n_lines) if src_stat is not None else "",
+            "{:,}".format(trg_stat.n_lines) if trg_stat is not None else "",
         ])
         out.append([
             "",
             _subword_prefix("Words", subwords=subwords),
-            "%d" %  src_stat.total_words if src_stat is not None else "",
-            "%d" % trg_stat.total_words if trg_stat is not None else ""
+            "{:,}".format(src_stat.total_words) if src_stat is not None else "",
+            "{:,}".format(trg_stat.total_words) if trg_stat is not None else "",
         ])
         out.append([
             "",
@@ -196,6 +196,14 @@ def output_corpus_table(stats, subwords = False):
             "%d (%.2f %%)" %  (src_stat.nn_oov, src_stat.nn_oov_rate * 100) if src_stat is not None else "",
             "%d (%.2f %%)" %  (trg_stat.nn_oov, trg_stat.nn_oov_rate * 100) if trg_stat is not None else ""
         ])
+        out.append([
+            "",
+            "avg sentence length",
+            "%d" %  (src_stat.average_sentence_length) if src_stat is not None else "",
+            "%d" %  (trg_stat.average_sentence_length) if trg_stat is not None else ""
+        ])
+        out.append([""])
+
     max_lengths = [0]*len(out[0])
     for row in out:
         for i, val in enumerate(row):
