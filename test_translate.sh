@@ -72,12 +72,12 @@ function run_experiment(){
 	 else
 		export CUDA_VISIBLE_DEVICES=0
 	 fi 
-	echo "translate $mode.$beam_size.$batch_size"
+	echo "translate $mode.$beam_size.$batch_size on ${processor}"
 	log_file=$(run_translate "${result_path}/${mode}.${processor}.beam.${beam_size}.batch.${batch_size}.${git_hash}" "$mode" "translate.batch-size=${batch_size} translate.beam-size=${beam_size}")
 	echo "done"
 	ws=$(grep "words/sec" "$log_file" | cut -d' ' -f11,12)
 	bleu=$(grep BLEU "$log_file" | cut -d= -f2 |cut -d' ' -f2)
-	res="${mode}.beam.${beam_size}.batch.${batch_size}: ${ws} ${bleu}"
+	res="${mode}.${processor}.beam.${beam_size}.batch.${batch_size}: ${ws} ${bleu}"
 	echo "$res"
 	result_string="${result_string}\n$res"
 }
