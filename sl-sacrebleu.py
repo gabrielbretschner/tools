@@ -53,7 +53,7 @@ if __name__ == "__main__":
     else:
         hyps = open(args.hyp)
     if args.ref.endswith(".gz"):
-        refs = gzip.open(args.ref)
+        refs = gzip.open(args.ref, mode='rt')
     else:
         refs = open(args.ref)
 
