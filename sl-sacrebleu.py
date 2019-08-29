@@ -49,7 +49,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.hyp.endswith(".gz"):
-        hyps = gzip.open(args.hyp)
+        hyps = gzip.open(args.hyp, mode='rt')
     else:
         hyps = open(args.hyp)
     if args.ref.endswith(".gz"):
