@@ -15,7 +15,10 @@ class Statistics:
                  nn_oov,
                  nn_vocab_size,
                  singletons,
-                 n_lines):
+                 n_lines,
+                 unk_words,
+                 unk_lines
+                 ):
         self.total_words = total_words
         self.uniq_words = uniq_words
         self.total_oovs = total_oovs
@@ -24,6 +27,8 @@ class Statistics:
         self.nn_vocab_size = nn_vocab_size
         self.n_lines = n_lines
         self.singletons = singletons
+        self.unk_words = unk_words
+        self.unk_lines = unk_lines
 
         self.total_oov_rate = total_oovs / total_words
         self.uniq_oov_rate = uniq_oovs / uniq_words
@@ -68,18 +73,21 @@ def read_vocabulary(fname):
 def read_corpus(fname,
                 vocabulary_threshold = None,
                 shared_vocabulary=None,
-                vocab = None,
-                subwords = False):
+                vocab=None):
     word_counts = defaultdict(int)
+    unk_lines = set()
+    unk_words = set()
 
     with smart_open(fname) as f:
         total_words = 0
-        total_subwords = 0
         for lineNr, line in enumerate(f):
             line = line.strip().split(' ')
             total_words += len(line)
             for word in line:
                 word_counts[word] += 1
+                if vocab is not None and word not in vocab:
+                    unk_lines.add((lineNr, line))
+                    unk_words.add(word)
 
     seen_vocabulary_size = len(word_counts)
     if shared_vocabulary is not None:
@@ -96,49 +104,46 @@ def read_corpus(fname,
     total_nn_oov = 0
     singletons = sum([1 if word_counts[word] == 1 else 0 for word in word_counts])
     if vocab is not None:
-        w = word_counts
-        total_nn_oov = sum([ w[k] if not k in vocab else 0 for k in w])
-
+        total_nn_oov = sum([word_counts[k] if k not in vocab else 0 for k in word_counts])
 
     stats = Statistics(
         total_words=total_words,
         uniq_words=len(word_counts),
-        # total_words=total_words,
-        # uniq_words=seen_vocabulary_size,
         total_oovs=total_oov_words,
         uniq_oovs=uniq_oov_words,
         nn_oov=total_nn_oov,
         nn_vocab_size=len(vocab) if vocab is not None else 0,
         singletons=singletons,
-        n_lines=lineNr + 1)
+        n_lines=lineNr + 1,
+        unk_words=unk_words,
+        unk_lines=unk_lines
+    )
 
     return word_counts, stats
 
 
-def read_test(fname, vocabulary, nn_vocab = None, subwords = False):
+def read_test(fname, vocabulary, nn_vocab = None):
+    unk_lines = set()
+    unk_words = set()
     with smart_open(fname) as f:
         seen_words = defaultdict(int)
         total_words = 0
-        total_subwords = 0
         for lineNr, line in enumerate(f):
             line = line.strip().split(' ')
             total_words += len(line)
             for word in line:
                 seen_words[word] += 1
+                if nn_vocab is not None and word not in vocab:
+                    unk_lines.add((lineNr, line))
+                    unk_words.add(word)
 
     oovs = set(seen_words.keys()) - set(vocabulary.keys())
     total_oov_words = sum([seen_words[word] for word in oovs])
     total_nn_oov = 0
     singletons = sum([1 if seen_words[word] == 1 else 0 for word in seen_words])
     if nn_vocab is not None:
-        w = seen_words
-        nn_oov = [w[k] if not k in nn_vocab else 0 for k in w]
-        # debug = {k:(w[k] if not k in nn_vocab else 0) for k in w}
-        # for key, value in sorted(debug.items(), key=operator.itemgetter(1)):
-        #     if value > 0:
-        #         print( "%s: %s" % (key, value))
+        nn_oov = [seen_words[k] if k not in nn_vocab else 0 for k in seen_words]
         total_nn_oov = sum(nn_oov)
-        # print(total_nn_oov, fname)
 
     stats = Statistics(
         total_words=total_words,
@@ -148,7 +153,10 @@ def read_test(fname, vocabulary, nn_vocab = None, subwords = False):
         nn_oov=total_nn_oov,
         nn_vocab_size = len(nn_vocab) if nn_vocab is not None else 0,
         singletons=singletons,
-        n_lines=lineNr + 1)
+        n_lines=lineNr + 1,
+        unk_lines=unk_lines,
+        unk_words=unk_words
+    )
 
     return stats
 
@@ -212,6 +220,7 @@ def output_corpus_table(stats, subwords = False):
     for row in out:
         print("\t".join([ val.ljust(max_lengths[i]) for i, val in enumerate(row)]))
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Corpus statistics collector")
     parser.add_argument("--src", type=str, required=True, help="Source training corpus")
@@ -231,6 +240,9 @@ if __name__ == "__main__":
     parser.add_argument("--trg-vocab", type=str, help="target vocabulary")
 
     parser.add_argument('--table', action="store_true", help="write output as a table. ")
+    parser.add_argument('--unks', type=str, help="write unknown words to given file. ", default=None)
+    parser.add_argument('--unk-sentences', type=str,
+                        help="write sentences containing unknown words to given file. ", default=None)
 
     args = parser.parse_args()
 
@@ -242,7 +254,6 @@ if __name__ == "__main__":
     nn_trg_vocab = None
     if args.trg_vocab:
         nn_trg_vocab = read_vocabulary(args.trg_vocab)
-
 
     if args.shared_vocab:
         assert args.src_limit == args.trg_limit
@@ -267,12 +278,10 @@ if __name__ == "__main__":
         src_vocab, src_train_stats = read_corpus(args.src, args.src_limit, vocab=nn_src_vocab, subwords=args.subword)
         trg_vocab, trg_train_stats = read_corpus(args.trg, args.trg_limit, vocab=nn_trg_vocab, subwords=args.subword)
 
-
     output_stats['train'] = (src_train_stats, trg_train_stats)
     if not args.table:
         output_corpus(src_train_stats, "Train source corpus: {}".format(args.src))
         output_corpus(trg_train_stats, "Train target corpus: {}".format(args.trg))
-
 
     src_test_sets = args.src_test.split(',')
     trg_test_sets = args.trg_test.split(',')
@@ -312,6 +321,26 @@ if __name__ == "__main__":
 
     if args.table:
         output_corpus_table(output_stats, subwords=args.subword)
+
+    if args.unks is not None:
+        with open("%s.src" % args.unk, "w") as f:
+            for word in src_train_stats.unk_words:
+                f.write("%s %d" % (word, src_vocab[word]))
+
+        with open("%s.tgt" % args.unk, "w") as f:
+            for word in trg_train_stats.unk_words:
+                f.write("%s %d" % (word, trg_vocab[word]))
+
+    if args.unk_sentences is not None:
+        with open("%s.src" % args.unk_sentences, "w") as f:
+            for lineNr, line in src_train_stats.unk_lines:
+                f.write("%d\t%s" % (lineNr, line))
+
+        with open("%s.tgt" % args.unk_sentences, "w") as f:
+            for lineNr, line in trg_train_stats.unk_lines:
+                f.write("%d\t%s" % (lineNr, line))
+
+
 
 
 
