@@ -80,13 +80,13 @@ def read_corpus(fname,
 
     with smart_open(fname) as f:
         total_words = 0
-        for lineNr, line in enumerate(f):
-            line = line.strip().split(' ')
+        for lineNr, s_line in enumerate(f):
+            line = s_line.strip().split(' ')
             total_words += len(line)
             for word in line:
                 word_counts[word] += 1
                 if vocab is not None and word not in vocab:
-                    unk_lines.add((lineNr, line))
+                    unk_lines.add((lineNr, s_line))
                     unk_words.add(word)
 
     seen_vocabulary_size = len(word_counts)
@@ -133,9 +133,9 @@ def read_test(fname, vocabulary, nn_vocab = None):
             total_words += len(line)
             for word in line:
                 seen_words[word] += 1
-                if nn_vocab is not None and word not in vocab:
-                    unk_lines.add((lineNr, line))
-                    unk_words.add(word)
+                # if nn_vocab is not None and word not in vocab:
+                #     unk_lines.add((lineNr, line))
+                #     unk_words.add(word)
 
     oovs = set(seen_words.keys()) - set(vocabulary.keys())
     total_oov_words = sum([seen_words[word] for word in oovs])
