@@ -5,7 +5,7 @@ import json, re
 from enum import OrderedDict
 import operator
 from typing import Tuple, Dict
-
+from itertools import chain
 
 class Statistics:
     def __init__(self,
@@ -198,14 +198,14 @@ def output_corpus_table(stats: Dict[str, Tuple[Statistics, Statistics]], subword
         out.append([
             "",
             "Vocabulary",
-            "%d" %  src_stat.uniq_words if src_stat is not None else "",
-            "%d" %  trg_stat.uniq_words if trg_stat is not None else ""
+            "%d" % src_stat.uniq_words if src_stat is not None else "",
+            "%d" % trg_stat.uniq_words if trg_stat is not None else ""
         ])
         out.append([
             "",
             "OOV",
-            "%d (%.2f %%)" %  (src_stat.nn_oov, src_stat.nn_oov_rate * 100) if src_stat is not None else "",
-            "%d (%.2f %%)" %  (trg_stat.nn_oov, trg_stat.nn_oov_rate * 100) if trg_stat is not None else ""
+            "%d (%.2f %%)" % (src_stat.nn_oov, src_stat.nn_oov_rate * 100) if src_stat is not None else "",
+            "%d (%.2f %%)" % (trg_stat.nn_oov, trg_stat.nn_oov_rate * 100) if trg_stat is not None else ""
         ])
         unk_sentences = ["", "sentences with unks"]
         if src_stat is not None:
@@ -216,6 +216,7 @@ def output_corpus_table(stats: Dict[str, Tuple[Statistics, Statistics]], subword
             )
         else:
             unk_sentences.append("")
+
         if trg_stat is not None:
             trg_num_unk_sen = len(trg_stat.unk_lines)
             trg_unk_sen_rate = trg_num_unk_sen / trg_stat.n_lines * 100
@@ -226,11 +227,17 @@ def output_corpus_table(stats: Dict[str, Tuple[Statistics, Statistics]], subword
             unk_sentences.append("")
 
         out.append(unk_sentences)
+
+        if src_stat is not None and trg_stat is not None:
+            shared_unk_lines = len(set([lineNr for lineNr, line in chain(src_stat.unk_lines, trg_stat.unk_lines)]))
+            shared_unk_rate = shared_unk_lines/src_stat.n_lines
+            out.append(["", "shared unk sentences", "%d" % shared_unk_lines, "(%.2f %%)" % shared_unk_rate])
+
         out.append([
             "",
             "avg sentence length",
-            "%d" %  (src_stat.average_sentence_length) if src_stat is not None else "",
-            "%d" %  (trg_stat.average_sentence_length) if trg_stat is not None else ""
+            "%d" % src_stat.average_sentence_length if src_stat is not None else "",
+            "%d" % trg_stat.average_sentence_length if trg_stat is not None else ""
         ])
         out.append([""])
 
