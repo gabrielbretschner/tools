@@ -274,8 +274,8 @@ if __name__ == "__main__":
 
         src_vocab = trg_vocab = vocab
     else:
-        src_vocab, src_train_stats = read_corpus(args.src, args.src_limit, vocab=nn_src_vocab, subwords=args.subword)
-        trg_vocab, trg_train_stats = read_corpus(args.trg, args.trg_limit, vocab=nn_trg_vocab, subwords=args.subword)
+        src_vocab, src_train_stats = read_corpus(args.src, args.src_limit, vocab=nn_src_vocab)
+        trg_vocab, trg_train_stats = read_corpus(args.trg, args.trg_limit, vocab=nn_trg_vocab)
 
     output_stats['train'] = (src_train_stats, trg_train_stats)
     if not args.table:
