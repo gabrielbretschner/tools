@@ -4,6 +4,7 @@ from collections import defaultdict
 import json, re
 from enum import OrderedDict
 import operator
+from typing import Tuple, Dict
 
 
 class Statistics:
@@ -173,7 +174,7 @@ def _subword_prefix(line, subwords = False):
         return line
 
 
-def output_corpus_table(stats, subwords = False):
+def output_corpus_table(stats: Dict[str, Tuple[Statistics, Statistics]], subwords = False):
     out = [["", "", "SRC", "TRG"]]
     for name, (src_stat, trg_stat) in stats.items():
         out.append([
@@ -206,6 +207,25 @@ def output_corpus_table(stats, subwords = False):
             "%d (%.2f %%)" %  (src_stat.nn_oov, src_stat.nn_oov_rate * 100) if src_stat is not None else "",
             "%d (%.2f %%)" %  (trg_stat.nn_oov, trg_stat.nn_oov_rate * 100) if trg_stat is not None else ""
         ])
+        unk_sentences = ["", "sentences with unks"]
+        if src_stat is not None:
+            src_num_unk_sen = len(src_stat.unk_lines)
+            src_unk_sen_rate = src_num_unk_sen / src_stat.n_lines * 100
+            unk_sentences.append(
+                "%d (%.2f %%)" % (src_num_unk_sen, src_unk_sen_rate),
+            )
+        else:
+            unk_sentences.append("")
+        if trg_stat is not None:
+            trg_num_unk_sen = len(trg_stat.unk_lines)
+            trg_unk_sen_rate = trg_num_unk_sen / trg_stat.n_lines * 100
+            unk_sentences.append(
+                "%d (%.2f %%)" % (trg_num_unk_sen, trg_unk_sen_rate),
+            )
+        else:
+            unk_sentences.append("")
+
+        out.append(unk_sentences)
         out.append([
             "",
             "avg sentence length",
