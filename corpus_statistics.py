@@ -322,11 +322,11 @@ if __name__ == "__main__":
         output_corpus_table(output_stats, subwords=args.subword)
 
     if args.unks is not None:
-        with open("%s.src" % args.unk, "w") as f:
+        with open("%s.src" % args.unks, "w") as f:
             for word in src_train_stats.unk_words:
                 f.write("%s %d" % (word, src_vocab[word]))
 
-        with open("%s.tgt" % args.unk, "w") as f:
+        with open("%s.tgt" % args.unks, "w") as f:
             for word in trg_train_stats.unk_words:
                 f.write("%s %d" % (word, trg_vocab[word]))
 
