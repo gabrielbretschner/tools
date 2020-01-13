@@ -165,11 +165,13 @@ def output_corpus(stats, header=""):
     print(header)
     print(str(stats))
 
+
 def _subword_prefix(line, subwords = False):
     if subwords:
         return "Sub"+line.lower()
     else:
         return line
+
 
 def output_corpus_table(stats, subwords = False):
     out = [["", "", "SRC", "TRG"]]
@@ -221,7 +223,7 @@ def output_corpus_table(stats, subwords = False):
         print("\t".join([ val.ljust(max_lengths[i]) for i, val in enumerate(row)]))
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Corpus statistics collector")
     parser.add_argument("--src", type=str, required=True, help="Source training corpus")
     parser.add_argument("--trg", type=str, required=True, help="Target training corpus")
@@ -234,27 +236,24 @@ if __name__ == "__main__":
     parser.add_argument("--src-limit", type=int, default=-1, help="Source vocabulary limit")
     parser.add_argument("--trg-limit", type=int, default=-1, help="Target vocabulary limit")
     parser.add_argument('--subword', action="store_true", help="corpus contains subword tokens. ")
-    parser.add_argument('--names', type=str, default="", help="comma separated name for the source and target files")
-
+    parser.add_argument('--names', type=str, default="",
+                        help="comma separated name for the source and target files")
     parser.add_argument("--src-vocab", type=str, help="source vocabulary")
     parser.add_argument("--trg-vocab", type=str, help="target vocabulary")
-
     parser.add_argument('--table', action="store_true", help="write output as a table. ")
-    parser.add_argument('--unks', type=str, help="write unknown words to given file. ", default=None)
+    parser.add_argument('--unks', type=str, help="write unknown words to given file. ",
+                        default=None)
     parser.add_argument('--unk-sentences', type=str,
-                        help="write sentences containing unknown words to given file. ", default=None)
-
+                        help="write sentences containing unknown words to given file. ",
+                        default=None)
     args = parser.parse_args()
-
     output_stats = OrderedDict()
     nn_src_vocab = None
     if args.src_vocab:
         nn_src_vocab = read_vocabulary(args.src_vocab)
-
     nn_trg_vocab = None
     if args.trg_vocab:
         nn_trg_vocab = read_vocabulary(args.trg_vocab)
-
     if args.shared_vocab:
         assert args.src_limit == args.trg_limit
 
@@ -276,12 +275,10 @@ if __name__ == "__main__":
     else:
         src_vocab, src_train_stats = read_corpus(args.src, args.src_limit, vocab=nn_src_vocab)
         trg_vocab, trg_train_stats = read_corpus(args.trg, args.trg_limit, vocab=nn_trg_vocab)
-
     output_stats['train'] = (src_train_stats, trg_train_stats)
     if not args.table:
         output_corpus(src_train_stats, "Train source corpus: {}".format(args.src))
         output_corpus(trg_train_stats, "Train target corpus: {}".format(args.trg))
-
     src_test_sets = args.src_test.split(',')
     trg_test_sets = args.trg_test.split(',')
     test_sets_names = args.names.split(',')
@@ -317,10 +314,8 @@ if __name__ == "__main__":
                 output_corpus(stats, "Test target corpus: {}".format(test_set))
             except FileNotFoundError:
                 pass
-
     if args.table:
         output_corpus_table(output_stats, subwords=args.subword)
-
     if args.unks is not None:
         with open("%s.src" % args.unks, "w") as f:
             for word in src_train_stats.unk_words:
@@ -329,7 +324,6 @@ if __name__ == "__main__":
         with open("%s.tgt" % args.unks, "w") as f:
             for word in trg_train_stats.unk_words:
                 f.write("%s %d\n" % (word, trg_vocab[word]))
-
     if args.unk_sentences is not None:
         with open("%s.src" % args.unk_sentences, "w") as f:
             for lineNr, line in src_train_stats.unk_lines:
@@ -338,6 +332,10 @@ if __name__ == "__main__":
         with open("%s.tgt" % args.unk_sentences, "w") as f:
             for lineNr, line in trg_train_stats.unk_lines:
                 f.write("%d\t%s\n" % (lineNr, line))
+
+
+if __name__ == "__main__":
+    main()
 
 
 
