@@ -264,8 +264,7 @@ if __name__ == "__main__":
         # now update with the target vocab and limit it
         vocab, trg_train_stats = read_corpus(args.trg, args.src_limit,
                                              shared_vocabulary=vocab,
-                                             vocab=nn_trg_vocab,
-                                             subwords=args.subword)
+                                             vocab=nn_trg_vocab)
 
         # now just read the source corpus again and get the statistics
         vocab, src_train_stats = read_corpus(args.src, args.src_limit,
@@ -291,13 +290,13 @@ if __name__ == "__main__":
             trg_stats = None
             src_stats = None
             try:
-                trg_stats = read_test(trg, trg_vocab, nn_vocab=nn_trg_vocab, subwords=args.subword)
+                trg_stats = read_test(trg, trg_vocab, nn_vocab=nn_trg_vocab)
                 if not args.table:
                     output_corpus(trg_stats, "Test source corpus: %s %s" % (name, src))
             except FileNotFoundError:
                 pass
             try:
-                src_stats = read_test(src, src_vocab, nn_vocab=nn_src_vocab, subwords=args.subword)
+                src_stats = read_test(src, src_vocab, nn_vocab=nn_src_vocab)
                 if not args.table:
                     output_corpus(src_stats, "Test target corpus: %s %s" % (name, trg))
             except FileNotFoundError:
@@ -307,14 +306,14 @@ if __name__ == "__main__":
     else:
         for test_set in args.src_test.split(','):
             try:
-                stats = read_test(test_set, src_vocab, subwords=args.subword)
+                stats = read_test(test_set, src_vocab)
                 output_corpus(stats, "Test source corpus: {}".format(test_set))
             except FileNotFoundError:
                 pass
 
         for test_set in args.trg_test.split(','):
             try:
-                stats = read_test(test_set, trg_vocab, subwords=args.subword)
+                stats = read_test(test_set, trg_vocab)
                 output_corpus(stats, "Test target corpus: {}".format(test_set))
             except FileNotFoundError:
                 pass
