@@ -324,20 +324,20 @@ if __name__ == "__main__":
     if args.unks is not None:
         with open("%s.src" % args.unks, "w") as f:
             for word in src_train_stats.unk_words:
-                f.write("%s %d" % (word, src_vocab[word]))
+                f.write("%s %d\n" % (word, src_vocab[word]))
 
         with open("%s.tgt" % args.unks, "w") as f:
             for word in trg_train_stats.unk_words:
-                f.write("%s %d" % (word, trg_vocab[word]))
+                f.write("%s %d\n" % (word, trg_vocab[word]))
 
     if args.unk_sentences is not None:
         with open("%s.src" % args.unk_sentences, "w") as f:
             for lineNr, line in src_train_stats.unk_lines:
-                f.write("%d\t%s" % (lineNr, line))
+                f.write("%d\t%s\n" % (lineNr, line))
 
         with open("%s.tgt" % args.unk_sentences, "w") as f:
             for lineNr, line in trg_train_stats.unk_lines:
-                f.write("%d\t%s" % (lineNr, line))
+                f.write("%d\t%s\n" % (lineNr, line))
 
 
 
